@@ -37,6 +37,16 @@ jobs:
           path: exercise-toolkit
           ref: v0.8.1
 
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install Python dependencies
+        id: install-python-dependencies
+        continue-on-error: true
+        run: python -m pip install -r requirements.txt
+
       - name: Find last comment
         id: find-last-comment
         uses: peter-evans/find-comment@v3
@@ -76,6 +86,11 @@ jobs:
             exit 1
           fi
 
+      - name: Run API tests
+        id: run-api-tests
+        continue-on-error: true
+        run: python -m pytest -q
+
       - name: Update comment - step results
         uses: GrantBirki/comment@v2.1.1
         with:
@@ -91,6 +106,10 @@ jobs:
                 passed: ${{ steps.check-for-pytest.outcome == 'success' }}
               - description: "Checked if tests are added in a separate directory"
                 passed: ${{ steps.check-tests-dir.outcome == 'success' }}
+              - description: "Installed Python dependencies"
+                passed: ${{ steps.install-python-dependencies.outcome == 'success' }}
+              - description: "API tests pass"
+                passed: ${{ steps.run-api-tests.outcome == 'success' }}
 
       # END: Check practical exercise
 
